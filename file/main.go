@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -25,7 +26,7 @@ func readLines(path string) ([]string, error) {
 }
 
 // writeLines writes the lines to the given file.
-func writeLines(lines []string, path string) error {
+func writeLines(lines []string, path string, repeat int) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
@@ -34,13 +35,26 @@ func writeLines(lines []string, path string) error {
 
 	w := bufio.NewWriter(file)
 	for _, line := range lines {
-		fmt.Fprintln(w, line+"-"+line+"-"+line)
+		repeat_line := line
+		for i := 1; i < repeat; i++ {
+			repeat_line += "-" + line
+		}
+		fmt.Fprintln(w, repeat_line)
 	}
 	return w.Flush()
 }
 
 func main() {
-	lines, err := readLines("test.txt")
+	var file_in, file_out string
+	var repeat int
+
+	// flags declaration using flag package
+	flag.StringVar(&file_in, "i", "test.txt", "name of input file, default is test.txt")
+	flag.StringVar(&file_out, "o", "test.out.txt", "name of output file, default is test.out.txt")
+	flag.IntVar(&repeat, "n", 0, "number of repetitions, default is 1")
+	flag.Parse()
+
+	lines, err := readLines(file_in)
 	if err != nil {
 		log.Fatalf("readLines: %s", err)
 	}
@@ -48,7 +62,7 @@ func main() {
 		fmt.Println(i, line)
 	}
 
-	if err := writeLines(lines, "test.out.txt"); err != nil {
+	if err := writeLines(lines, file_out, repeat); err != nil {
 		log.Fatalf("writeLines: %s", err)
 	}
 }
